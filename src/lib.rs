@@ -78,6 +78,14 @@ impl MusicApi {
     }
 
     #[allow(unused)]
+    pub fn from_client(client: HttpClient) -> Self {
+        Self {
+            client,
+            csrf: RefCell::new(String::new()),
+        }
+    }
+
+    #[allow(unused)]
     pub fn from_cookie_jar(cookie_jar: CookieJar, max_cons: usize) -> Self {
         let client = HttpClient::builder()
             .timeout(Duration::from_secs(TIMEOUT))
