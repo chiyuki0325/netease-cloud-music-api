@@ -440,6 +440,26 @@ pub fn to_song_info(json: String, parse: Parse) -> Result<Vec<SongInfo>> {
                     num -= 1;
                 }
             }
+            Parse::Intelligence => {
+                let array: &Vec<Value> = get_val!(value, "data")?;
+                for v in array.iter() {
+                    vec.push(SongInfo {
+                        id: get_val!(v, "id")?,
+                        name: get_val!(v, "songInfo", "name")?,
+                        singer: get_val!(@as &Vec<Value>, v, "songInfo", "ar")?
+                            .first()
+                            .map(|v: &Value| get_val!(v, "name").unwrap_or_else(|_| unk.clone()))
+                            .unwrap_or_else(|| unk.clone()),
+                        album: get_val!(v, "songInfo", "al", "name")
+                            .unwrap_or_else(|_| unk.clone()),
+                        album_id: get_val!(v, "songInfo", "al", "id")?,
+                        pic_url: get_val!(v, "songInfo", "al", "picUrl").unwrap_or_default(),
+                        duration: get_val!(v, "songInfo", "dt")?,
+                        song_url: String::new(),
+                        copyright: SongCopyright::Unknown,
+                    });
+                }
+            }
             _ => {}
         }
         return Ok(vec);
@@ -743,6 +763,10 @@ pub struct LoginInfo {
     pub nickname: String,
     /// 用户头像
     pub avatar_url: String,
+    /// VIP 等级
+    /// 0 : 普通用户
+    /// 11: 黑胶7
+    pub vip_type: i32,
     /// 状态消息
     pub msg: String,
 }
@@ -757,6 +781,7 @@ pub fn to_login_info(json: String) -> Result<LoginInfo> {
             uid: get_val!(value, "profile", "userId")?,
             nickname: get_val!(value, "profile", "nickname")?,
             avatar_url: get_val!(value, "profile", "avatarUrl")?,
+            vip_type: get_val!(value, "profile", "vipType")?,
             msg: "".to_owned(),
         });
     }
@@ -767,6 +792,7 @@ pub fn to_login_info(json: String) -> Result<LoginInfo> {
         uid: 0,
         nickname: "".to_owned(),
         avatar_url: "".to_owned(),
+        vip_type: 0,
         msg,
     })
 }
@@ -932,6 +958,7 @@ pub enum Method {
 /// TOP: 热门
 /// Singer: 歌手热门单曲
 /// Dj: 电台
+/// Intelligence: 心动/智能
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum Parse {
@@ -948,6 +975,7 @@ pub enum Parse {
     Singer,
     SingerSongs,
     Radio,
+    Intelligence,
 }
 
 /// 客户端类型

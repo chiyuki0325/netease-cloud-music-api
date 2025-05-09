@@ -8,8 +8,6 @@ use lazy_static::lazy_static;
 use openssl::hash::{hash, DigestBytes, MessageDigest};
 use openssl::rsa::{Padding, Rsa};
 use openssl::symm::{encrypt, Cipher};
-use rand::rngs::OsRng;
-use rand::RngCore;
 use urlqstring::QueryParams;
 use AesMode::{cbc, ecb};
 
@@ -40,7 +38,7 @@ pub enum AesMode {
 impl Crypto {
     pub fn hex_random_bytes(n: usize) -> String {
         let mut data: Vec<u8> = Vec::with_capacity(n);
-        OsRng.fill_bytes(&mut data);
+        rand::fill(&mut data[..]);
         hex::encode(data)
     }
 
@@ -56,7 +54,7 @@ impl Crypto {
 
     pub fn weapi(text: &str) -> String {
         let mut secret_key = [0u8; 16];
-        OsRng.fill_bytes(&mut secret_key);
+        rand::fill(&mut secret_key[..]);
         let key: Vec<u8> = secret_key
             .iter()
             .map(|i| BASE62[(i % 62) as usize])
