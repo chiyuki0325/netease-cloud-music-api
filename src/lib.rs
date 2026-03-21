@@ -81,7 +81,7 @@ impl MusicApi {
     pub fn from_client(client: HttpClient) -> Self {
         Self {
             client,
-            csrf: RefCell::new(String::new()),
+            csrf: OnceLock::new(),
         }
     }
 
